@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fence Department — Price Estimator</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <header class="header">
+    <h1>Fence Department</h1>
+    <p class="subtitle">Price Estimator</p>
+  </header>
+
+  <nav class="tab-bar" role="tablist">
+    <button class="tab active" role="tab" aria-selected="true" data-tab="fence-rental">Fence Rental</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="fence-purchase">Fence Purchase</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="barricade-rental">Barricade Rental</button>
+  </nav>
+
+  <main class="container">
+
+    <!-- ============ FENCE RENTAL ============ -->
+    <section id="fence-rental" class="tab-panel active" role="tabpanel">
+      <div class="steps-container">
+
+        <!-- Step 1: Coverage -->
+        <div class="step active" id="rental-step-1">
+          <h3><span class="step-num">1</span> Coverage</h3>
+          <div class="step-content">
+            <div class="field-group">
+              <label for="rental-linear-feet">Linear Feet Needed</label>
+              <input type="number" id="rental-linear-feet" min="1" step="1" inputmode="numeric" placeholder="e.g. 200">
+            </div>
+            <div class="field-group">
+              <label>Site Type</label>
+              <div class="radio-cards">
+                <label class="radio-card">
+                  <input type="radio" name="rental-site-type" value="residential">
+                  <span>Residential</span>
+                </label>
+                <label class="radio-card">
+                  <input type="radio" name="rental-site-type" value="commercial">
+                  <span>Commercial</span>
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 2: Panel Height -->
+        <div class="step locked" id="rental-step-2">
+          <h3><span class="step-num">2</span> Panel Height</h3>
+          <div class="step-content">
+            <div class="radio-cards">
+              <label class="radio-card">
+                <input type="radio" name="rental-height" value="6ft">
+                <span>6 ft</span>
+              </label>
+              <label class="radio-card">
+                <input type="radio" name="rental-height" value="8ft">
+                <span>8 ft</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 3: Installation Surface -->
+        <div class="step locked" id="rental-step-3">
+          <h3><span class="step-num">3</span> Installation Surface</h3>
+          <div class="step-content">
+            <div class="radio-cards">
+              <label class="radio-card">
+                <input type="radio" name="rental-surface" value="dirt">
+                <span>Dirt</span>
+              </label>
+              <label class="radio-card">
+                <input type="radio" name="rental-surface" value="concrete">
+                <span>Concrete</span>
+              </label>
+            </div>
+            <div id="rental-install-type-group" class="field-group sub-option hidden">
+              <label>Installation Method</label>
+              <div class="radio-cards">
+                <label class="radio-card">
+                  <input type="radio" name="rental-install-type" value="above-ground">
+                  <span>Above Ground</span>
+                </label>
+                <label class="radio-card">
+                  <input type="radio" name="rental-install-type" value="in-ground">
+                  <span>In Ground</span>
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 4: Privacy Screen -->
+        <div class="step locked" id="rental-step-4">
+          <h3><span class="step-num">4</span> Privacy Screen</h3>
+          <div class="step-content">
+            <div class="radio-cards">
+              <label class="radio-card">
+                <input type="radio" name="rental-privacy" value="yes">
+                <span>Yes</span>
+              </label>
+              <label class="radio-card">
+                <input type="radio" name="rental-privacy" value="no">
+                <span>No</span>
+              </label>
+            </div>
+            <div id="rental-privacy-color-group" class="field-group sub-option hidden">
+              <label>Screen Color</label>
+              <div class="radio-cards">
+                <label class="radio-card">
+                  <input type="radio" name="rental-privacy-color" value="dark-green">
+                  <span>Dark Green<small>More privacy</small></span>
+                </label>
+                <label class="radio-card">
+                  <input type="radio" name="rental-privacy-color" value="light-green">
+                  <span>Light Green<small>More airflow</small></span>
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 5: Gates -->
+        <div class="step locked" id="rental-step-5">
+          <h3><span class="step-num">5</span> Gates</h3>
+          <div class="step-content">
+            <div class="field-group">
+              <label>Vehicle Gate</label>
+              <div class="radio-cards">
+                <label class="radio-card">
+                  <input type="radio" name="rental-vehicle-gate" value="yes">
+                  <span>Yes</span>
+                </label>
+                <label class="radio-card">
+                  <input type="radio" name="rental-vehicle-gate" value="no">
+                  <span>No</span>
+                </label>
+              </div>
+              <div id="rental-vehicle-wheel-group" class="field-group sub-option hidden">
+                <label class="checkbox-label">
+                  <input type="checkbox" id="rental-vehicle-wheel">
+                  <span>Add wheel (+$40)</span>
+                </label>
+              </div>
+            </div>
+            <div class="field-group">
+              <label>Pedestrian Gate</label>
+              <div class="radio-cards">
+                <label class="radio-card">
+                  <input type="radio" name="rental-ped-gate" value="yes">
+                  <span>Yes</span>
+                </label>
+                <label class="radio-card">
+                  <input type="radio" name="rental-ped-gate" value="no">
+                  <span>No</span>
+                </label>
+              </div>
+              <div id="rental-ped-wheel-group" class="field-group sub-option hidden">
+                <label class="checkbox-label">
+                  <input type="checkbox" id="rental-ped-wheel">
+                  <span>Add wheel (+$40)</span>
+                </label>
+              </div>
+            </div>
+            <p class="note">Push/pull gates included at no extra charge.</p>
+          </div>
+        </div>
+
+        <!-- Step 6: Sandbags -->
+        <div class="step locked" id="rental-step-6">
+          <h3><span class="step-num">6</span> Sandbags</h3>
+          <div class="step-content">
+            <p id="rental-sandbag-recommendation" class="note"></p>
+            <div class="field-group">
+              <label for="rental-sandbag-qty">Quantity</label>
+              <input type="number" id="rental-sandbag-qty" min="0" step="1" inputmode="numeric" value="0">
+              <p class="note">$7.00 each (purchased — taxable). Recommended for stability, especially in windy areas.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 7: Rental Duration -->
+        <div class="step locked" id="rental-step-7">
+          <h3><span class="step-num">7</span> Rental Duration</h3>
+          <div class="step-content">
+            <div class="field-group">
+              <label for="rental-duration">Duration (months)</label>
+              <select id="rental-duration">
+                <option value="6">Up to 6 months (standard)</option>
+                <option value="7">7 months</option>
+                <option value="8">8 months</option>
+                <option value="9">9 months</option>
+                <option value="10">10 months</option>
+                <option value="11">11 months</option>
+                <option value="12">12 months (1-year commitment — 1 month free)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 8: Delivery -->
+        <div class="step locked" id="rental-step-8">
+          <h3><span class="step-num">8</span> Delivery</h3>
+          <div class="step-content">
+            <div class="field-group">
+              <label for="rental-zip">Customer Zip Code</label>
+              <input type="text" id="rental-zip" maxlength="5" inputmode="numeric" pattern="[0-9]*" placeholder="e.g. 90210">
+              <p id="rental-delivery-info" class="note"></p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Rental Summary -->
+      <div id="rental-summary" class="summary-card">
+        <h3>Estimate Summary</h3>
+        <div id="rental-summary-content">
+          <p class="empty-state">Fill in the steps above to see your estimate.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ FENCE PURCHASE ============ -->
+    <section id="fence-purchase" class="tab-panel" role="tabpanel">
+      <h2>Fence Purchase Estimator</h2>
+      <div class="product-table-wrap">
+        <table class="product-table" id="sales-product-table">
+          <thead>
+            <tr>
+              <th>Product</th>
+              <th>Unit Price</th>
+              <th>Qty</th>
+              <th>Line Total</th>
+            </tr>
+          </thead>
+          <tbody id="sales-product-body">
+            <!-- Rendered by JS from config -->
+          </tbody>
+        </table>
+      </div>
+
+      <div class="field-group delivery-field">
+        <label for="sales-zip">Delivery Zip Code</label>
+        <input type="text" id="sales-zip" maxlength="5" inputmode="numeric" pattern="[0-9]*" placeholder="e.g. 90210">
+        <p id="sales-delivery-info" class="note"></p>
+      </div>
+
+      <div id="sales-summary" class="summary-card">
+        <h3>Purchase Summary</h3>
+        <div id="sales-summary-content">
+          <p class="empty-state">Add quantities above to see your estimate.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ BARRICADE RENTAL ============ -->
+    <section id="barricade-rental" class="tab-panel" role="tabpanel">
+      <h2>Barricade Rental Estimator</h2>
+
+      <div class="field-group">
+        <label for="barricade-linear-feet">Linear Feet Needed</label>
+        <input type="number" id="barricade-linear-feet" min="1" step="1" inputmode="numeric" placeholder="e.g. 200">
+      </div>
+
+      <div class="field-group">
+        <label for="barricade-duration">Rental Duration (months)</label>
+        <select id="barricade-duration">
+          <option value="6">Up to 6 months (standard)</option>
+          <option value="7">7 months</option>
+          <option value="8">8 months</option>
+          <option value="9">9 months</option>
+          <option value="10">10 months</option>
+          <option value="11">11 months</option>
+          <option value="12">12 months (1-year commitment — 1 month free)</option>
+        </select>
+      </div>
+
+      <div class="field-group">
+        <label for="barricade-zip">Delivery Zip Code</label>
+        <input type="text" id="barricade-zip" maxlength="5" inputmode="numeric" pattern="[0-9]*" placeholder="e.g. 90210">
+        <p id="barricade-delivery-info" class="note"></p>
+      </div>
+
+      <div id="barricade-summary" class="summary-card">
+        <h3>Estimate Summary</h3>
+        <div id="barricade-summary-content">
+          <p class="empty-state">Fill in the fields above to see your estimate.</p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="footer">
+    <p>Prices subject to change. Estimates are not final quotes.</p>
+  </footer>
+
+  <script src="js/config.js"></script>
+  <script src="js/zip-data.js"></script>
+  <script src="js/distance.js"></script>
+  <script src="js/sales-estimator.js"></script>
+  <script src="js/rental-estimator.js"></script>
+  <script src="js/barricade-estimator.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
