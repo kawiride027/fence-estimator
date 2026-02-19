@@ -38,6 +38,10 @@ var RentalEstimator = {
     document.querySelectorAll('input[name="rental-install-type"]').forEach(function (r) {
       r.addEventListener("change", function () {
         self.unlockStep(4);
+        // Reset steps from 6 onward because sandbag step visibility depends on install type
+        self.resetStepsFrom(6);
+        // Re-evaluate gate completion to trigger correct post-gate flow
+        self.checkStep5();
         self.recalculate();
       });
     });
@@ -144,8 +148,26 @@ var RentalEstimator = {
       if (!gateType) return;
     }
 
-    this.unlockStep(6);
-    this.updateSandbagRecommendation();
+    var installType = Utils.getRadioValue("rental-install-type");
+
+    if (installType === "in-ground") {
+      // In-ground installs use posts, NOT sandbags — skip Step 6 entirely
+      document.getElementById("rental-sandbag-qty").value = 0;
+      document.getElementById("rental-sandbag-qty").setAttribute("data-auto-filled", "false");
+      // Lock Step 6 if it was previously unlocked (e.g. user switched from above-ground)
+      var step6 = document.getElementById("rental-step-6");
+      if (step6 && !step6.classList.contains("locked")) {
+        step6.classList.add("locked");
+        step6.classList.remove("active", "completed");
+      }
+      // Skip straight to Step 7 (Duration) and Step 8 (Delivery)
+      this.unlockStep(7);
+      this.unlockStep(8);
+    } else {
+      // Above-ground installs use sandbags — show Step 6 normally
+      this.unlockStep(6);
+      this.updateSandbagRecommendation();
+    }
   },
 
   updateSandbagRecommendation: function () {
@@ -231,18 +253,21 @@ var RentalEstimator = {
     // Fence cost (rounded footage)
     var fenceCost = roundedFeet * rates.fence;
 
-    // Concrete surcharge (drilling) — only for concrete surface (both install types on concrete)
+    // In-ground vs above-ground logic:
+    // - In-ground: uses posts ($20/post), NO sandbags. Drilling surcharge only on concrete.
+    // - Above-ground: uses sandbags, NO posts, NO drilling surcharge.
     var concreteSurcharge = 0;
-    if (surface === "concrete") {
-      concreteSurcharge = roundedFeet * CONFIG.rental.concreteSurcharge;
-    }
-
-    // In-ground post charges — for in-ground install on ANY surface
     var postCount = 0;
     var postCost = 0;
     if (installType === "in-ground") {
       postCount = panels * CONFIG.rental.postsPerPanel;
       postCost = postCount * CONFIG.rental.inGroundPostPrice;
+      // Drilling surcharge only for in-ground on concrete
+      if (surface === "concrete") {
+        concreteSurcharge = roundedFeet * CONFIG.rental.concreteSurcharge;
+      }
+      // In-ground installs do NOT use sandbags — force qty to 0
+      sandbagQty = 0;
     }
 
     // Gate charges
