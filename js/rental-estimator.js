@@ -12,22 +12,17 @@ var RentalEstimator = {
   bindEvents: function () {
     var self = this;
 
-    // Step 1: Coverage
+    // Step 1: Coverage (just linear feet — site type removed)
     document.getElementById("rental-linear-feet").addEventListener("input", function () {
       self.checkStep1();
       self.recalculate();
-    });
-    document.querySelectorAll('input[name="rental-site-type"]').forEach(function (r) {
-      r.addEventListener("change", function () {
-        self.checkStep1();
-        self.recalculate();
-      });
     });
 
     // Step 2: Height
     document.querySelectorAll('input[name="rental-height"]').forEach(function (r) {
       r.addEventListener("change", function () {
         self.unlockStep(3);
+        self.updateGateLabels();
         self.resetStepsFrom(4); // height affects privacy screen pricing and sandbags
         self.recalculate();
       });
@@ -47,41 +42,40 @@ var RentalEstimator = {
       });
     });
 
-    // Step 4: Privacy
+    // Step 4: Privacy (no color sub-option anymore)
     document.querySelectorAll('input[name="rental-privacy"]').forEach(function (r) {
-      r.addEventListener("change", function () {
-        self.handlePrivacyChange();
-        self.recalculate();
-      });
-    });
-    document.querySelectorAll('input[name="rental-privacy-color"]').forEach(function (r) {
       r.addEventListener("change", function () {
         self.unlockStep(5);
         self.recalculate();
       });
     });
 
-    // Step 5: Gates
+    // Step 5: Gates — vehicle gate yes/no
     document.querySelectorAll('input[name="rental-vehicle-gate"]').forEach(function (r) {
       r.addEventListener("change", function () {
         var show = r.value === "yes" && r.checked;
-        document.getElementById("rental-vehicle-wheel-group").classList.toggle("hidden", !show);
-        if (!show) document.getElementById("rental-vehicle-wheel").checked = false;
+        document.getElementById("rental-vehicle-gate-type-group").classList.toggle("hidden", !show);
+        if (!show) {
+          document.querySelectorAll('input[name="rental-vehicle-gate-type"]').forEach(function (rt) { rt.checked = false; });
+        }
         self.checkStep5();
         self.recalculate();
       });
     });
+    // Vehicle gate type sub-option
+    document.querySelectorAll('input[name="rental-vehicle-gate-type"]').forEach(function (r) {
+      r.addEventListener("change", function () {
+        self.checkStep5();
+        self.recalculate();
+      });
+    });
+    // Pedestrian gate yes/no
     document.querySelectorAll('input[name="rental-ped-gate"]').forEach(function (r) {
       r.addEventListener("change", function () {
-        var show = r.value === "yes" && r.checked;
-        document.getElementById("rental-ped-wheel-group").classList.toggle("hidden", !show);
-        if (!show) document.getElementById("rental-ped-wheel").checked = false;
         self.checkStep5();
         self.recalculate();
       });
     });
-    document.getElementById("rental-vehicle-wheel").addEventListener("change", function () { self.recalculate(); });
-    document.getElementById("rental-ped-wheel").addEventListener("change", function () { self.recalculate(); });
 
     // Step 6: Sandbags
     document.getElementById("rental-sandbag-qty").addEventListener("input", function () {
@@ -107,8 +101,7 @@ var RentalEstimator = {
 
   checkStep1: function () {
     var feet = parseInt(document.getElementById("rental-linear-feet").value);
-    var siteType = Utils.getRadioValue("rental-site-type");
-    if (feet > 0 && siteType) {
+    if (feet > 0) {
       this.unlockStep(2);
     }
   },
@@ -117,41 +110,42 @@ var RentalEstimator = {
     var surface = Utils.getRadioValue("rental-surface");
     var installGroup = document.getElementById("rental-install-type-group");
 
-    if (surface === "dirt") {
-      installGroup.classList.remove("hidden");
-      // Don't auto-unlock step 4 — wait for install type selection
-    } else if (surface === "concrete") {
-      installGroup.classList.add("hidden");
-      // Auto-select above-ground and clear any in-ground selection
-      document.querySelectorAll('input[name="rental-install-type"]').forEach(function (r) {
-        r.checked = r.value === "above-ground";
-      });
-      this.unlockStep(4);
-    }
+    // Show install type options for BOTH dirt and concrete
+    installGroup.classList.remove("hidden");
+    // Clear previous install type selection
+    document.querySelectorAll('input[name="rental-install-type"]').forEach(function (r) {
+      r.checked = false;
+    });
+  },
+
+  updateGateLabels: function () {
+    var height = Utils.getRadioValue("rental-height");
+    var h = height === "8ft" ? "8" : "6";
+    var stdLabel = document.getElementById("rental-vgate-standard-label");
+    var dwLabel = document.getElementById("rental-vgate-doublewide-label");
+    if (stdLabel) stdLabel.textContent = h + "×10 / " + h + "×12 Standard — $" + CONFIG.rental.gates.vehicleStandard;
+    if (dwLabel) dwLabel.textContent = h + "×20 Double-Wide — $" + CONFIG.rental.gates.vehicleDoubleWide;
   },
 
   handlePrivacyChange: function () {
-    var privacy = Utils.getRadioValue("rental-privacy");
-    var colorGroup = document.getElementById("rental-privacy-color-group");
-
-    if (privacy === "yes") {
-      colorGroup.classList.remove("hidden");
-      // Wait for color selection before unlocking step 5
-    } else {
-      colorGroup.classList.add("hidden");
-      // Clear color selection
-      document.querySelectorAll('input[name="rental-privacy-color"]').forEach(function (r) { r.checked = false; });
-      this.unlockStep(5);
-    }
+    // No longer needed — privacy is just yes/no, immediately unlocks step 5
   },
 
   checkStep5: function () {
-    var vehicle = Utils.getRadioValue("rental-vehicle-gate");
-    var ped = Utils.getRadioValue("rental-ped-gate");
-    if (vehicle && ped) {
-      this.unlockStep(6);
-      this.updateSandbagRecommendation();
+    var vehicleGate = Utils.getRadioValue("rental-vehicle-gate");
+    var pedGate = Utils.getRadioValue("rental-ped-gate");
+
+    // Both must be answered
+    if (!vehicleGate || !pedGate) return;
+
+    // If vehicle gate is "yes", must also pick a type
+    if (vehicleGate === "yes") {
+      var gateType = Utils.getRadioValue("rental-vehicle-gate-type");
+      if (!gateType) return;
     }
+
+    this.unlockStep(6);
+    this.updateSandbagRecommendation();
   },
 
   updateSandbagRecommendation: function () {
@@ -219,9 +213,8 @@ var RentalEstimator = {
     var installType = Utils.getRadioValue("rental-install-type");
     var privacy = Utils.getRadioValue("rental-privacy");
     var vehicleGate = Utils.getRadioValue("rental-vehicle-gate");
+    var vehicleGateType = Utils.getRadioValue("rental-vehicle-gate-type");
     var pedGate = Utils.getRadioValue("rental-ped-gate");
-    var vehicleWheel = document.getElementById("rental-vehicle-wheel").checked;
-    var pedWheel = document.getElementById("rental-ped-wheel").checked;
     var sandbagQty = parseInt(document.getElementById("rental-sandbag-qty").value) || 0;
     var duration = parseInt(document.getElementById("rental-duration").value) || 6;
     var zip = document.getElementById("rental-zip").value.trim();
@@ -232,19 +225,43 @@ var RentalEstimator = {
     }
 
     var roundedFeet = Utils.roundUpToPanel(linearFeet);
+    var panels = Utils.panelCount(linearFeet);
     var rates = CONFIG.rental.rates[height];
 
     // Fence cost (rounded footage)
     var fenceCost = roundedFeet * rates.fence;
 
-    // Concrete surcharge (on rounded footage since panels are installed)
-    var concreteSurcharge = surface === "concrete" ? roundedFeet * CONFIG.rental.concreteSurcharge : 0;
+    // Concrete surcharge (drilling) — only for concrete surface (both install types on concrete)
+    var concreteSurcharge = 0;
+    if (surface === "concrete") {
+      concreteSurcharge = roundedFeet * CONFIG.rental.concreteSurcharge;
+    }
 
-    // Gate wheels
-    var wheelCount = 0;
-    if (vehicleGate === "yes" && vehicleWheel) wheelCount++;
-    if (pedGate === "yes" && pedWheel) wheelCount++;
-    var wheelCost = wheelCount * CONFIG.rental.gateWheelPrice;
+    // In-ground post charges — for in-ground install on ANY surface
+    var postCount = 0;
+    var postCost = 0;
+    if (installType === "in-ground") {
+      postCount = panels * CONFIG.rental.postsPerPanel;
+      postCost = postCount * CONFIG.rental.inGroundPostPrice;
+    }
+
+    // Gate charges
+    var vehicleGateCost = 0;
+    var vehicleGateLabel = "";
+    if (vehicleGate === "yes" && vehicleGateType) {
+      if (vehicleGateType === "standard") {
+        vehicleGateCost = CONFIG.rental.gates.vehicleStandard;
+        vehicleGateLabel = "Vehicle Gate (Standard)";
+      } else if (vehicleGateType === "double-wide") {
+        vehicleGateCost = CONFIG.rental.gates.vehicleDoubleWide;
+        vehicleGateLabel = "Vehicle Gate (Double-Wide)";
+      }
+    }
+    var pedGateCost = 0;
+    if (pedGate === "yes") {
+      pedGateCost = CONFIG.rental.gates.pedestrian;
+    }
+    var totalGateCost = vehicleGateCost + pedGateCost;
 
     // Delivery
     var delivery = { miles: null, cost: 0, free: false, error: false };
@@ -265,17 +282,6 @@ var RentalEstimator = {
       deliveryInfo.textContent = "";
     }
 
-    // Rental subtotal (for minimum check and extension calc)
-    var rentalSubtotal = fenceCost + concreteSurcharge + wheelCost + delivery.cost;
-    var minimumApplied = false;
-    if (rentalSubtotal < CONFIG.rental.minimumRentalPrice) {
-      minimumApplied = true;
-      rentalSubtotal = CONFIG.rental.minimumRentalPrice;
-    }
-
-    // Extension charges
-    var ext = Utils.calculateExtensionCharges(rentalSubtotal, duration);
-
     // Purchase charges (privacy screen + sandbags — taxable)
     var privacyScreenCost = 0;
     if (privacy === "yes") {
@@ -284,24 +290,52 @@ var RentalEstimator = {
     var sandbagCost = sandbagQty * CONFIG.rental.sandbagPrice;
     var purchaseSubtotal = privacyScreenCost + sandbagCost;
     var purchaseTax = purchaseSubtotal * CONFIG.salesTaxRate;
+
+    // $950 minimum — applied to ENTIRE pre-tax invoice (rental + purchase + delivery)
+    var rentalCharges = fenceCost + concreteSurcharge + postCost + totalGateCost + delivery.cost;
+    var invoicePreTax = rentalCharges + purchaseSubtotal;
+    var minimumApplied = false;
+    if (invoicePreTax < CONFIG.rental.minimumRentalPrice) {
+      minimumApplied = true;
+      // Bump the rental portion to make up the difference
+      var deficit = CONFIG.rental.minimumRentalPrice - invoicePreTax;
+      rentalCharges += deficit;
+      invoicePreTax = CONFIG.rental.minimumRentalPrice;
+    }
+
+    // Extension charges — calculated on rental charges only (fence + surcharges + gates + delivery)
+    var ext = Utils.calculateExtensionCharges(rentalCharges, duration);
+
+    // Purchase total (with tax)
     var purchaseTotal = purchaseSubtotal + purchaseTax;
 
     // Grand total
-    var grandTotal = rentalSubtotal + ext.extensionTotal + purchaseTotal;
+    var grandTotal = rentalCharges + ext.extensionTotal + purchaseTotal;
+
+    // Show/hide PDF button
+    document.getElementById("rental-save-pdf").style.display = "inline-block";
 
     this.renderSummary({
       linearFeet: linearFeet,
       roundedFeet: roundedFeet,
+      panels: panels,
       height: height,
       surface: surface,
       installType: installType,
       rates: rates,
       fenceCost: fenceCost,
       concreteSurcharge: concreteSurcharge,
-      wheelCount: wheelCount,
-      wheelCost: wheelCost,
+      postCount: postCount,
+      postCost: postCost,
+      vehicleGate: vehicleGate,
+      vehicleGateType: vehicleGateType,
+      vehicleGateCost: vehicleGateCost,
+      vehicleGateLabel: vehicleGateLabel,
+      pedGate: pedGate,
+      pedGateCost: pedGateCost,
+      totalGateCost: totalGateCost,
       delivery: delivery,
-      rentalSubtotal: rentalSubtotal,
+      rentalCharges: rentalCharges,
       minimumApplied: minimumApplied,
       ext: ext,
       privacy: privacy,
@@ -322,6 +356,7 @@ var RentalEstimator = {
     var el = document.getElementById("rental-summary-content");
     if (!data) {
       el.innerHTML = '<p class="empty-state">Fill in the steps above to see your estimate.</p>';
+      document.getElementById("rental-save-pdf").style.display = "none";
       return;
     }
 
@@ -333,11 +368,19 @@ var RentalEstimator = {
     html += '<div class="summary-line"><span class="label">Fence <small>' + data.roundedFeet + " LF of " + data.height + " @ " + Utils.formatCurrency(data.rates.fence) + '/LF</small></span><span class="value">' + Utils.formatCurrency(data.fenceCost) + "</span></div>";
 
     if (data.concreteSurcharge > 0) {
-      html += '<div class="summary-line"><span class="label">Concrete surcharge <small>' + data.roundedFeet + " LF @ $1.50/LF</small></span><span class=\"value\">" + Utils.formatCurrency(data.concreteSurcharge) + "</span></div>";
+      html += '<div class="summary-line"><span class="label">Concrete drilling surcharge <small>' + data.roundedFeet + " LF @ $1.50/LF</small></span><span class=\"value\">" + Utils.formatCurrency(data.concreteSurcharge) + "</span></div>";
     }
 
-    if (data.wheelCost > 0) {
-      html += '<div class="summary-line"><span class="label">Gate wheel(s) <small>' + data.wheelCount + ' × $40</small></span><span class="value">' + Utils.formatCurrency(data.wheelCost) + "</span></div>";
+    if (data.postCost > 0) {
+      html += '<div class="summary-line"><span class="label">In-ground posts <small>' + data.postCount + " posts × $" + CONFIG.rental.inGroundPostPrice + '</small></span><span class="value">' + Utils.formatCurrency(data.postCost) + "</span></div>";
+    }
+
+    if (data.vehicleGateCost > 0) {
+      html += '<div class="summary-line"><span class="label">' + data.vehicleGateLabel + ' <small>wheel included</small></span><span class="value">' + Utils.formatCurrency(data.vehicleGateCost) + "</span></div>";
+    }
+
+    if (data.pedGateCost > 0) {
+      html += '<div class="summary-line"><span class="label">Pedestrian Gate</span><span class="value">' + Utils.formatCurrency(data.pedGateCost) + "</span></div>";
     }
 
     if (data.delivery.miles !== null && !data.delivery.error) {
@@ -353,7 +396,7 @@ var RentalEstimator = {
     if (data.minimumApplied) {
       html += '<span class="summary-badge badge-min">Min $950 applied</span>';
     }
-    html += '</span><span class="value"><strong>' + Utils.formatCurrency(data.rentalSubtotal) + "</strong></span></div>";
+    html += '</span><span class="value"><strong>' + Utils.formatCurrency(data.rentalCharges) + "</strong></span></div>";
     html += "</div>";
 
     // Extension charges
@@ -377,7 +420,7 @@ var RentalEstimator = {
         html += '<div class="summary-line"><span class="label">Privacy screen <small>' + data.linearFeet + " LF @ " + Utils.formatCurrency(data.rates.privacyScreen) + '/LF</small></span><span class="value">' + Utils.formatCurrency(data.privacyScreenCost) + "</span></div>";
       }
       if (data.sandbagCost > 0) {
-        html += '<div class="summary-line"><span class="label">Sandbags <small>' + data.sandbagQty + " × $7.00</small></span><span class=\"value\">" + Utils.formatCurrency(data.sandbagCost) + "</span></div>";
+        html += '<div class="summary-line"><span class="label">Sandbags <small>' + data.sandbagQty + " × $" + CONFIG.rental.sandbagPrice.toFixed(2) + '</small></span><span class="value">' + Utils.formatCurrency(data.sandbagCost) + "</span></div>";
       }
       html += '<div class="summary-line"><span class="label">Sales Tax (9.5%)</span><span class="value">' + Utils.formatCurrency(data.purchaseTax) + "</span></div>";
       html += '<hr class="summary-divider">';
@@ -391,7 +434,7 @@ var RentalEstimator = {
 
     // Extension rate note
     if (data.duration <= 6) {
-      html += '<div class="summary-note info">Monthly extension rate after 6 months: ' + Utils.formatCurrency(data.rentalSubtotal * CONFIG.rental.extensionRate) + "/mo (16% of rental)</div>";
+      html += '<div class="summary-note info">Monthly extension rate after 6 months: ' + Utils.formatCurrency(data.rentalCharges * CONFIG.rental.extensionRate) + "/mo (16% of rental)</div>";
     }
 
     // Dig Alert note

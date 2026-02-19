@@ -32,19 +32,6 @@
               <label for="rental-linear-feet">Linear Feet Needed</label>
               <input type="number" id="rental-linear-feet" min="1" step="1" inputmode="numeric" placeholder="e.g. 200">
             </div>
-            <div class="field-group">
-              <label>Site Type</label>
-              <div class="radio-cards">
-                <label class="radio-card">
-                  <input type="radio" name="rental-site-type" value="residential">
-                  <span>Residential</span>
-                </label>
-                <label class="radio-card">
-                  <input type="radio" name="rental-site-type" value="commercial">
-                  <span>Commercial</span>
-                </label>
-              </div>
-            </div>
           </div>
         </div>
 
@@ -109,19 +96,6 @@
                 <span>No</span>
               </label>
             </div>
-            <div id="rental-privacy-color-group" class="field-group sub-option hidden">
-              <label>Screen Color</label>
-              <div class="radio-cards">
-                <label class="radio-card">
-                  <input type="radio" name="rental-privacy-color" value="dark-green">
-                  <span>Dark Green<small>More privacy</small></span>
-                </label>
-                <label class="radio-card">
-                  <input type="radio" name="rental-privacy-color" value="light-green">
-                  <span>Light Green<small>More airflow</small></span>
-                </label>
-              </div>
-            </div>
           </div>
         </div>
 
@@ -141,15 +115,23 @@
                   <span>No</span>
                 </label>
               </div>
-              <div id="rental-vehicle-wheel-group" class="field-group sub-option hidden">
-                <label class="checkbox-label">
-                  <input type="checkbox" id="rental-vehicle-wheel">
-                  <span>Add wheel (+$40)</span>
-                </label>
+              <div id="rental-vehicle-gate-type-group" class="field-group sub-option hidden">
+                <label>Gate Size</label>
+                <div class="radio-cards">
+                  <label class="radio-card">
+                    <input type="radio" name="rental-vehicle-gate-type" value="standard">
+                    <span id="rental-vgate-standard-label">Standard 10ft/12ft — $125</span>
+                  </label>
+                  <label class="radio-card">
+                    <input type="radio" name="rental-vehicle-gate-type" value="double-wide">
+                    <span id="rental-vgate-doublewide-label">Double-Wide 20ft — $175</span>
+                  </label>
+                </div>
+                <p class="note">Wheel included free with all vehicle gates.</p>
               </div>
             </div>
             <div class="field-group">
-              <label>Pedestrian Gate</label>
+              <label>Pedestrian Gate — $75</label>
               <div class="radio-cards">
                 <label class="radio-card">
                   <input type="radio" name="rental-ped-gate" value="yes">
@@ -160,14 +142,7 @@
                   <span>No</span>
                 </label>
               </div>
-              <div id="rental-ped-wheel-group" class="field-group sub-option hidden">
-                <label class="checkbox-label">
-                  <input type="checkbox" id="rental-ped-wheel">
-                  <span>Add wheel (+$40)</span>
-                </label>
-              </div>
             </div>
-            <p class="note">Push/pull gates included at no extra charge.</p>
           </div>
         </div>
 
@@ -179,7 +154,7 @@
             <div class="field-group">
               <label for="rental-sandbag-qty">Quantity</label>
               <input type="number" id="rental-sandbag-qty" min="0" step="1" inputmode="numeric" value="0">
-              <p class="note">$7.00 each (purchased — taxable). Recommended for stability, especially in windy areas.</p>
+              <p class="note">$7.95 each (purchased — taxable). Recommended for stability, especially in windy areas.</p>
             </div>
           </div>
         </div>
@@ -215,6 +190,29 @@
           </div>
         </div>
 
+        <!-- Customer Info (optional) -->
+        <div class="customer-info-section" id="rental-customer-info">
+          <h3>Customer Information <small>(optional)</small></h3>
+          <div class="customer-info-fields">
+            <div class="field-group">
+              <label for="rental-cust-name">Customer Name</label>
+              <input type="text" id="rental-cust-name" placeholder="e.g. John Smith">
+            </div>
+            <div class="field-group">
+              <label for="rental-cust-phone">Phone</label>
+              <input type="tel" id="rental-cust-phone" placeholder="e.g. (818) 555-1234">
+            </div>
+            <div class="field-group">
+              <label for="rental-cust-email">Email</label>
+              <input type="email" id="rental-cust-email" placeholder="e.g. john@example.com">
+            </div>
+            <div class="field-group">
+              <label for="rental-cust-address">Job Site Address</label>
+              <input type="text" id="rental-cust-address" placeholder="e.g. 123 Main St, Los Angeles, CA">
+            </div>
+          </div>
+        </div>
+
       </div>
 
       <!-- Rental Summary -->
@@ -223,6 +221,7 @@
         <div id="rental-summary-content">
           <p class="empty-state">Fill in the steps above to see your estimate.</p>
         </div>
+        <button class="btn-save-pdf" id="rental-save-pdf" style="display:none;">Save as PDF</button>
       </div>
     </section>
 
@@ -245,10 +244,47 @@
         </table>
       </div>
 
-      <div class="field-group delivery-field">
+      <div class="field-group">
+        <label>Does the customer need delivery?</label>
+        <div class="radio-cards">
+          <label class="radio-card">
+            <input type="radio" name="sales-needs-delivery" value="yes">
+            <span>Yes — Deliver</span>
+          </label>
+          <label class="radio-card">
+            <input type="radio" name="sales-needs-delivery" value="no">
+            <span>No — Will Call / Pickup at Sylmar</span>
+          </label>
+        </div>
+      </div>
+
+      <div id="sales-delivery-group" class="field-group delivery-field hidden">
         <label for="sales-zip">Delivery Zip Code</label>
         <input type="text" id="sales-zip" maxlength="5" inputmode="numeric" pattern="[0-9]*" placeholder="e.g. 90210">
         <p id="sales-delivery-info" class="note"></p>
+      </div>
+
+      <!-- Customer Info (optional) -->
+      <div class="customer-info-section" id="sales-customer-info">
+        <h3>Customer Information <small>(optional)</small></h3>
+        <div class="customer-info-fields">
+          <div class="field-group">
+            <label for="sales-cust-name">Customer Name</label>
+            <input type="text" id="sales-cust-name" placeholder="e.g. John Smith">
+          </div>
+          <div class="field-group">
+            <label for="sales-cust-phone">Phone</label>
+            <input type="tel" id="sales-cust-phone" placeholder="e.g. (818) 555-1234">
+          </div>
+          <div class="field-group">
+            <label for="sales-cust-email">Email</label>
+            <input type="email" id="sales-cust-email" placeholder="e.g. john@example.com">
+          </div>
+          <div class="field-group">
+            <label for="sales-cust-address">Job Site Address</label>
+            <input type="text" id="sales-cust-address" placeholder="e.g. 123 Main St, Los Angeles, CA">
+          </div>
+        </div>
       </div>
 
       <div id="sales-summary" class="summary-card">
@@ -256,6 +292,7 @@
         <div id="sales-summary-content">
           <p class="empty-state">Add quantities above to see your estimate.</p>
         </div>
+        <button class="btn-save-pdf" id="sales-save-pdf" style="display:none;">Save as PDF</button>
       </div>
     </section>
 
@@ -287,11 +324,35 @@
         <p id="barricade-delivery-info" class="note"></p>
       </div>
 
+      <!-- Customer Info (optional) -->
+      <div class="customer-info-section" id="barricade-customer-info">
+        <h3>Customer Information <small>(optional)</small></h3>
+        <div class="customer-info-fields">
+          <div class="field-group">
+            <label for="barricade-cust-name">Customer Name</label>
+            <input type="text" id="barricade-cust-name" placeholder="e.g. John Smith">
+          </div>
+          <div class="field-group">
+            <label for="barricade-cust-phone">Phone</label>
+            <input type="tel" id="barricade-cust-phone" placeholder="e.g. (818) 555-1234">
+          </div>
+          <div class="field-group">
+            <label for="barricade-cust-email">Email</label>
+            <input type="email" id="barricade-cust-email" placeholder="e.g. john@example.com">
+          </div>
+          <div class="field-group">
+            <label for="barricade-cust-address">Job Site Address</label>
+            <input type="text" id="barricade-cust-address" placeholder="e.g. 123 Main St, Los Angeles, CA">
+          </div>
+        </div>
+      </div>
+
       <div id="barricade-summary" class="summary-card">
         <h3>Estimate Summary</h3>
         <div id="barricade-summary-content">
           <p class="empty-state">Fill in the fields above to see your estimate.</p>
         </div>
+        <button class="btn-save-pdf" id="barricade-save-pdf" style="display:none;">Save as PDF</button>
       </div>
     </section>
 

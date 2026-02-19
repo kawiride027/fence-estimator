@@ -1,19 +1,21 @@
 /* ============================================================
    FENCE DEPARTMENT PRICE ESTIMATOR — STYLES
+   Green theme matching thegreendumpster.com
    ============================================================ */
 
 :root {
-  --primary: #1e40af;
-  --primary-light: #3b82f6;
-  --primary-bg: #eff6ff;
-  --accent: #059669;
-  --accent-bg: #ecfdf5;
+  --primary: #41a329;
+  --primary-dark: #2d7a1a;
+  --primary-light: #5cb843;
+  --primary-bg: #ecf5ea;
+  --accent: #e3a600;
+  --accent-bg: #fef8e7;
   --bg: #f8fafc;
   --card-bg: #ffffff;
   --text: #1e293b;
   --text-muted: #64748b;
   --border: #e2e8f0;
-  --border-focus: #3b82f6;
+  --border-focus: #41a329;
   --error: #dc2626;
   --success: #16a34a;
   --warning: #d97706;
@@ -40,7 +42,7 @@ body {
 /* ---- HEADER ---- */
 
 .header {
-  background: var(--primary);
+  background: linear-gradient(135deg, #1a3313 0%, #2d7a1a 50%, #41a329 100%);
   color: #fff;
   text-align: center;
   padding: 20px 16px 16px;
@@ -179,6 +181,8 @@ body {
 
 input[type="number"],
 input[type="text"],
+input[type="tel"],
+input[type="email"],
 select {
   width: 100%;
   padding: 12px;
@@ -194,7 +198,7 @@ select {
 input:focus, select:focus {
   outline: none;
   border-color: var(--border-focus);
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+  box-shadow: 0 0 0 3px rgba(65, 163, 41, 0.15);
 }
 select {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2364748b' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
@@ -238,7 +242,7 @@ select {
 .radio-card:has(input:checked) {
   border-color: var(--primary);
   background: var(--primary-bg);
-  color: var(--primary);
+  color: var(--primary-dark);
   font-weight: 600;
 }
 .radio-card span {
@@ -253,7 +257,7 @@ select {
   color: var(--text-muted);
 }
 .radio-card:has(input:checked) span small {
-  color: var(--primary);
+  color: var(--primary-dark);
 }
 
 /* ---- CHECKBOX ---- */
@@ -401,7 +405,7 @@ select {
   justify-content: space-between;
   font-size: 1.1rem;
   font-weight: 700;
-  color: var(--accent);
+  color: var(--primary-dark);
   padding: 6px 0;
 }
 .summary-note {
@@ -413,7 +417,7 @@ select {
   margin-top: 10px;
 }
 .summary-note.info {
-  color: var(--primary);
+  color: var(--primary-dark);
   background: var(--primary-bg);
 }
 .summary-badge {
@@ -427,22 +431,69 @@ select {
   margin-left: 6px;
 }
 .badge-free {
-  background: var(--accent-bg);
-  color: var(--accent);
+  background: var(--primary-bg);
+  color: var(--primary);
 }
 .badge-min {
   background: var(--warning-bg);
   color: var(--warning);
 }
 .badge-discount {
-  background: var(--accent-bg);
-  color: var(--accent);
+  background: var(--primary-bg);
+  color: var(--primary);
 }
 
 /* ---- DELIVERY FIELD ---- */
 
 .delivery-field {
   margin-top: 16px;
+}
+
+/* ---- CUSTOMER INFO ---- */
+
+.customer-info-section {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-top: 16px;
+  margin-bottom: 12px;
+}
+.customer-info-section h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: var(--text);
+}
+.customer-info-section h3 small {
+  font-weight: 400;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+.customer-info-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+/* ---- SAVE AS PDF BUTTON ---- */
+
+.btn-save-pdf {
+  display: inline-block;
+  margin-top: 16px;
+  padding: 12px 24px;
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  width: 100%;
+}
+.btn-save-pdf:hover {
+  background: var(--primary-dark);
 }
 
 /* ---- FOOTER ---- */
@@ -478,5 +529,9 @@ select {
     min-width: 90px;
     padding: 10px 12px;
     font-size: 0.85rem;
+  }
+
+  .customer-info-fields {
+    grid-template-columns: 1fr;
   }
 }

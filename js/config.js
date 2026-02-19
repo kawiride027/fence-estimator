@@ -10,14 +10,15 @@ const CONFIG = {
 
   // ---- SALES PRODUCTS ----
   salesProducts: [
-    { id: "8x10-panel",      name: "8×10 Panel",           price: 120 },
-    { id: "8x10-panel-gate", name: "8×10 Panel w/ Gate",   price: 150 },
-    { id: "6x10-panel",      name: "6×10 Panel",           price: 105 },
-    { id: "6x10-panel-gate", name: "6×10 Panel w/ Gate",   price: 135 },
-    { id: "fence-base",      name: "Fence Base/Stand",      price: 20 },
-    { id: "fence-clamp",     name: "Fence Clamp",           price: 3 },
-    { id: "6x50-screen",     name: "6×50 Green Screen",     price: 50 },
-    { id: "8x50-screen",     name: "8×50 Green Screen",     price: 58 },
+    { id: "8x10-panel",      name: "8×10 Panel",                    price: 120 },
+    { id: "8x10-panel-gate", name: "8×10 Panel w/ Pedestrian Gate", price: 150 },
+    { id: "6x10-panel",      name: "6×10 Panel",                    price: 105 },
+    { id: "6x10-panel-gate", name: "6×10 Panel w/ Pedestrian Gate", price: 135 },
+    { id: "fence-base",      name: "Fence Base/Stand",               price: 20 },
+    { id: "fence-clamp",     name: "Fence Clamp",                    price: 3 },
+    { id: "fence-post",      name: "Purchasing Post",                price: 45 },
+    { id: "6x50-screen",     name: "6×50 Green Screen",              price: 50 },
+    { id: "8x50-screen",     name: "8×50 Green Screen",              price: 58 },
   ],
 
   salesVolumeDiscounts: [
@@ -43,15 +44,24 @@ const CONFIG = {
     yearCommitmentFreeMonths: 1, // 1 month free on 12-month commitment
 
     rates: {
-      "6ft": { fence: 3.00, privacyScreen: 2.50 },
-      "8ft": { fence: 3.99, privacyScreen: 3.00 },
+      "6ft": { fence: 3.50, privacyScreen: 3.00 },
+      "8ft": { fence: 4.50, privacyScreen: 4.00 },
     },
 
     barricadeRate: 2.00, // per LF
 
-    concreteSurcharge: 1.50, // per LF
-    gateWheelPrice: 40,      // each, rental charge
-    sandbagPrice: 7,         // each, purchase (taxable)
+    concreteSurcharge: 1.50, // per LF (drilling for in-ground on concrete)
+    inGroundPostPrice: 20,   // per post
+    postsPerPanel: 2,        // typically 2 posts per panel
+
+    // Gate rental fees (wheel included free on all gates)
+    gates: {
+      vehicleStandard: 125,   // 10ft or 12ft wide
+      vehicleDoubleWide: 175, // 20ft wide
+      pedestrian: 75,
+    },
+
+    sandbagPrice: 7.95, // each, purchase (taxable)
 
     sandbagRecommendations: {
       "6ft": { withPrivacy: [1, 2], withoutPrivacy: [0, 1] },

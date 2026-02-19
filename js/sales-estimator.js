@@ -34,6 +34,21 @@ var SalesEstimator = {
     zipInput.addEventListener("input", function () {
       self.recalculate();
     });
+
+    // Delivery toggle: yes/no
+    document.querySelectorAll('input[name="sales-needs-delivery"]').forEach(function (r) {
+      r.addEventListener("change", function () {
+        var needsDelivery = r.value === "yes" && r.checked;
+        var deliveryGroup = document.getElementById("sales-delivery-group");
+        deliveryGroup.classList.toggle("hidden", !needsDelivery);
+        if (!needsDelivery) {
+          // Clear zip and delivery info when switching to will-call
+          document.getElementById("sales-zip").value = "";
+          document.getElementById("sales-delivery-info").textContent = "";
+        }
+        self.recalculate();
+      });
+    });
   },
 
   recalculate: function () {
@@ -65,13 +80,14 @@ var SalesEstimator = {
     var tax = discountedSubtotal * CONFIG.salesTaxRate;
     var afterTax = discountedSubtotal + tax;
 
-    // Delivery
+    // Delivery — check if customer needs delivery
+    var needsDelivery = Utils.getRadioValue("sales-needs-delivery") === "yes";
     var zipInput = document.getElementById("sales-zip");
     var zip = zipInput.value.trim();
     var delivery = { miles: null, cost: 0, free: false, error: false };
     var deliveryInfo = document.getElementById("sales-delivery-info");
 
-    if (zip.length === 5) {
+    if (needsDelivery && zip.length === 5) {
       delivery = Distance.salesDeliveryCost(zip, discountedSubtotal);
       if (delivery.error) {
         deliveryInfo.textContent = "Zip code not in our delivery area — please call for a quote.";
@@ -83,17 +99,23 @@ var SalesEstimator = {
         deliveryInfo.textContent = delivery.miles + " miles × $" + CONFIG.salesDelivery.perMileRate + "/mi = " + Utils.formatCurrency(delivery.cost);
         deliveryInfo.style.color = "var(--text-muted)";
       }
+    } else if (!needsDelivery) {
+      deliveryInfo.textContent = "";
     } else {
       deliveryInfo.textContent = "";
     }
 
     var grandTotal = afterTax + delivery.cost;
 
+    // Show/hide PDF button
+    var pdfBtn = document.getElementById("sales-save-pdf");
+    pdfBtn.style.display = subtotal > 0 ? "inline-block" : "none";
+
     // Render summary
-    this.renderSummary(subtotal, discountPercent, discount, discountedSubtotal, tax, delivery, grandTotal);
+    this.renderSummary(subtotal, discountPercent, discount, discountedSubtotal, tax, delivery, grandTotal, needsDelivery);
   },
 
-  renderSummary: function (subtotal, discountPercent, discount, discountedSubtotal, tax, delivery, grandTotal) {
+  renderSummary: function (subtotal, discountPercent, discount, discountedSubtotal, tax, delivery, grandTotal, needsDelivery) {
     var el = document.getElementById("sales-summary-content");
 
     if (subtotal === 0) {
@@ -116,16 +138,18 @@ var SalesEstimator = {
     html += "</div>";
 
     // Delivery
-    if (delivery.miles !== null && !delivery.error) {
-      html += '<hr class="summary-divider">';
-      html += '<div class="summary-section">';
+    html += '<hr class="summary-divider">';
+    html += '<div class="summary-section">';
+    if (!needsDelivery || Utils.getRadioValue("sales-needs-delivery") === "no") {
+      html += '<div class="summary-line"><span class="label">Delivery<span class="summary-badge badge-free">Will Call</span></span><span class="value">$0.00</span></div>';
+    } else if (delivery.miles !== null && !delivery.error) {
       if (delivery.free) {
         html += '<div class="summary-line"><span class="label">Delivery (' + delivery.miles + ' mi)<span class="summary-badge badge-free">Free</span></span><span class="value">$0.00</span></div>';
       } else {
         html += '<div class="summary-line"><span class="label">Delivery (' + delivery.miles + " mi × $" + CONFIG.salesDelivery.perMileRate + '/mi)</span><span class="value">' + Utils.formatCurrency(delivery.cost) + "</span></div>";
       }
-      html += "</div>";
     }
+    html += "</div>";
 
     // Grand total
     html += '<hr class="summary-divider">';

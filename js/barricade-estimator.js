@@ -21,6 +21,7 @@ var BarricadeEstimator = {
 
     if (linearFeet <= 0) {
       this.renderSummary(null);
+      document.getElementById("barricade-save-pdf").style.display = "none";
       return;
     }
 
@@ -59,6 +60,9 @@ var BarricadeEstimator = {
     var ext = Utils.calculateExtensionCharges(rentalSubtotal, duration);
 
     var grandTotal = rentalSubtotal + ext.extensionTotal;
+
+    // Show PDF button
+    document.getElementById("barricade-save-pdf").style.display = "inline-block";
 
     this.renderSummary({
       linearFeet: linearFeet,
