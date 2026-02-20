@@ -64,17 +64,31 @@ var Utils = {
     return checked ? checked.value : null;
   },
 
-  calculateExtensionCharges: function (rentalSubtotal, durationMonths) {
+  calculateExtensionCharges: function (extensionBase, durationMonths) {
     var baseMonths = CONFIG.rental.standardTermMonths;
     var extensionRate = CONFIG.rental.extensionRate;
+    var minMonthly = CONFIG.rental.minimumMonthlyExtension;
     var yearCommitment = CONFIG.rental.yearCommitmentMonths;
     var freeMonths = CONFIG.rental.yearCommitmentFreeMonths;
 
     if (durationMonths <= baseMonths) {
-      return { extensionTotal: 0, monthlyExtension: 0, extensionMonths: 0, isYearCommitment: false, label: "" };
+      // Still show the projected monthly extension for the info note
+      var projectedMonthly = extensionBase * extensionRate;
+      var minAppliedProjected = false;
+      if (projectedMonthly < minMonthly) {
+        projectedMonthly = minMonthly;
+        minAppliedProjected = true;
+      }
+      return { extensionTotal: 0, monthlyExtension: projectedMonthly, extensionMonths: 0, isYearCommitment: false, extensionMinApplied: minAppliedProjected, label: "" };
     }
 
-    var monthlyExtension = rentalSubtotal * extensionRate;
+    var monthlyExtension = extensionBase * extensionRate;
+    var extensionMinApplied = false;
+    if (monthlyExtension < minMonthly) {
+      monthlyExtension = minMonthly;
+      extensionMinApplied = true;
+    }
+
     var extensionMonths = durationMonths - baseMonths;
     var isYearCommitment = durationMonths === yearCommitment;
 
@@ -91,6 +105,7 @@ var Utils = {
       monthlyExtension: monthlyExtension,
       extensionMonths: extensionMonths,
       isYearCommitment: isYearCommitment,
+      extensionMinApplied: extensionMinApplied,
       label: isYearCommitment
         ? extensionMonths + " months extension (1 month free)"
         : extensionMonths + " month(s) extension @ 16%"

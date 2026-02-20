@@ -48,7 +48,10 @@ const CONFIG = {
       "8ft": { fence: 4.50, privacyScreen: 4.00 },
     },
 
-    barricadeRate: 2.00, // per LF
+    barricadeRate: 2.00, // per LF (legacy — replaced by barricadePrice)
+    barricadePrice: 15,       // per barricade unit
+    barricadeLengthFt: 7.5,   // each barricade is 7.5ft long
+    minimumMonthlyExtension: 94.35, // floor for monthly extension charge
 
     concreteSurcharge: 1.50, // per LF (drilling for in-ground on concrete)
     inGroundPostPrice: 20,   // per post

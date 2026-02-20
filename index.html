@@ -311,19 +311,25 @@
       <div class="field-group">
         <label for="barricade-linear-feet">Linear Feet Needed</label>
         <input type="number" id="barricade-linear-feet" min="1" step="1" inputmode="numeric" placeholder="e.g. 200">
+        <p class="note">Each barricade is 7.5 ft long × 3.5 ft tall — $15/barricade per month</p>
       </div>
 
       <div class="field-group">
-        <label for="barricade-duration">Rental Duration (months)</label>
-        <select id="barricade-duration">
-          <option value="6">Up to 6 months (standard)</option>
-          <option value="7">7 months</option>
-          <option value="8">8 months</option>
-          <option value="9">9 months</option>
-          <option value="10">10 months</option>
-          <option value="11">11 months</option>
-          <option value="12">12 months (1-year commitment — 1 month free)</option>
-        </select>
+        <label>Rental Duration (months)</label>
+        <div class="radio-cards radio-cards-4">
+          <label class="radio-card"><input type="radio" name="barricade-duration" value="1"><span>1 mo</span></label>
+          <label class="radio-card"><input type="radio" name="barricade-duration" value="2"><span>2 mo</span></label>
+          <label class="radio-card"><input type="radio" name="barricade-duration" value="3"><span>3 mo</span></label>
+          <label class="radio-card"><input type="radio" name="barricade-duration" value="4"><span>4 mo</span></label>
+          <label class="radio-card"><input type="radio" name="barricade-duration" value="5"><span>5 mo</span></label>
+          <label class="radio-card"><input type="radio" name="barricade-duration" value="6"><span>6 mo</span></label>
+          <label class="radio-card"><input type="radio" name="barricade-duration" value="7"><span>7 mo</span></label>
+          <label class="radio-card"><input type="radio" name="barricade-duration" value="8"><span>8 mo</span></label>
+          <label class="radio-card"><input type="radio" name="barricade-duration" value="9"><span>9 mo</span></label>
+          <label class="radio-card"><input type="radio" name="barricade-duration" value="10"><span>10 mo</span></label>
+          <label class="radio-card"><input type="radio" name="barricade-duration" value="11"><span>11 mo</span></label>
+          <label class="radio-card"><input type="radio" name="barricade-duration" value="12"><span>12 mo</span></label>
+        </div>
       </div>
 
       <div class="field-group">

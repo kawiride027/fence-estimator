@@ -316,26 +316,29 @@ var RentalEstimator = {
     var purchaseSubtotal = privacyScreenCost + sandbagCost;
     var purchaseTax = purchaseSubtotal * CONFIG.salesTaxRate;
 
-    // $950 minimum — applied to ENTIRE pre-tax invoice (rental + purchase + delivery)
-    var rentalCharges = fenceCost + concreteSurcharge + postCost + totalGateCost + delivery.cost;
-    var invoicePreTax = rentalCharges + purchaseSubtotal;
-    var minimumApplied = false;
-    if (invoicePreTax < CONFIG.rental.minimumRentalPrice) {
-      minimumApplied = true;
-      // Bump the rental portion to make up the difference
-      var deficit = CONFIG.rental.minimumRentalPrice - invoicePreTax;
-      rentalCharges += deficit;
-      invoicePreTax = CONFIG.rental.minimumRentalPrice;
-    }
-
-    // Extension charges — calculated on rental charges only (fence + surcharges + gates + delivery)
-    var ext = Utils.calculateExtensionCharges(rentalCharges, duration);
+    // Non-taxable rental charges
+    var nonTaxableTotal = fenceCost + concreteSurcharge + postCost + totalGateCost + delivery.cost;
 
     // Purchase total (with tax)
     var purchaseTotal = purchaseSubtotal + purchaseTax;
 
+    // True invoice total (before Install & Removal Fee, before extensions)
+    var trueInvoiceTotal = nonTaxableTotal + purchaseTotal;
+
+    // Install & Removal Fee — explicit line item to reach $950 minimum
+    var installRemovalFee = 0;
+    if (trueInvoiceTotal < CONFIG.rental.minimumRentalPrice) {
+      installRemovalFee = CONFIG.rental.minimumRentalPrice - trueInvoiceTotal;
+    }
+
+    // Extension base = non-taxable items + I&R fee (all rental charges)
+    var extensionBase = nonTaxableTotal + installRemovalFee;
+
+    // Extension charges — 16% of extensionBase, min $94.35/mo
+    var ext = Utils.calculateExtensionCharges(extensionBase, duration);
+
     // Grand total
-    var grandTotal = rentalCharges + ext.extensionTotal + purchaseTotal;
+    var grandTotal = nonTaxableTotal + installRemovalFee + ext.extensionTotal + purchaseTotal;
 
     // Show/hide PDF button
     document.getElementById("rental-save-pdf").style.display = "inline-block";
@@ -360,8 +363,9 @@ var RentalEstimator = {
       pedGateCost: pedGateCost,
       totalGateCost: totalGateCost,
       delivery: delivery,
-      rentalCharges: rentalCharges,
-      minimumApplied: minimumApplied,
+      nonTaxableTotal: nonTaxableTotal,
+      installRemovalFee: installRemovalFee,
+      extensionBase: extensionBase,
       ext: ext,
       privacy: privacy,
       privacyScreenCost: privacyScreenCost,
@@ -416,22 +420,24 @@ var RentalEstimator = {
       }
     }
 
+    if (data.installRemovalFee > 0) {
+      html += '<div class="summary-line"><span class="label">Install & Removal Fee <span class="summary-badge badge-min">Min $950</span></span><span class="value">' + Utils.formatCurrency(data.installRemovalFee) + "</span></div>";
+    }
+
     html += '<hr class="summary-divider">';
     html += '<div class="summary-line"><span class="label"><strong>Rental Subtotal</strong>';
-    if (data.minimumApplied) {
-      html += '<span class="summary-badge badge-min">Min $950 applied</span>';
-    }
-    html += '</span><span class="value"><strong>' + Utils.formatCurrency(data.rentalCharges) + "</strong></span></div>";
+    html += '</span><span class="value"><strong>' + Utils.formatCurrency(data.nonTaxableTotal + data.installRemovalFee) + "</strong></span></div>";
     html += "</div>";
 
     // Extension charges
     if (data.ext.extensionMonths > 0) {
       html += '<div class="summary-section">';
       html += '<div class="summary-section-title">Extension Charges</div>';
+      var extMinNote = data.ext.extensionMinApplied ? ' <span class="summary-badge badge-min">Min $94.35/mo</span>' : '';
       if (data.ext.isYearCommitment) {
-        html += '<div class="summary-line"><span class="label">' + data.ext.extensionMonths + " months extension <small>(1 month free)</small>" + '<span class="summary-badge badge-discount">1-Yr Commitment</span></span><span class="value">' + Utils.formatCurrency(data.ext.extensionTotal) + "</span></div>";
+        html += '<div class="summary-line"><span class="label">' + data.ext.extensionMonths + " months extension <small>(1 month free)</small>" + '<span class="summary-badge badge-discount">1-Yr Commitment</span>' + extMinNote + '</span><span class="value">' + Utils.formatCurrency(data.ext.extensionTotal) + "</span></div>";
       } else {
-        html += '<div class="summary-line"><span class="label">' + data.ext.extensionMonths + " month(s) @ 16% <small>" + Utils.formatCurrency(data.ext.monthlyExtension) + '/mo</small></span><span class="value">' + Utils.formatCurrency(data.ext.extensionTotal) + "</span></div>";
+        html += '<div class="summary-line"><span class="label">' + data.ext.extensionMonths + " month(s) @ " + Utils.formatCurrency(data.ext.monthlyExtension) + '/mo' + extMinNote + '</span><span class="value">' + Utils.formatCurrency(data.ext.extensionTotal) + "</span></div>";
       }
       html += "</div>";
     }
@@ -459,7 +465,13 @@ var RentalEstimator = {
 
     // Extension rate note
     if (data.duration <= 6) {
-      html += '<div class="summary-note info">Monthly extension rate after 6 months: ' + Utils.formatCurrency(data.rentalCharges * CONFIG.rental.extensionRate) + "/mo (16% of rental)</div>";
+      var noteText = "Monthly extension rate after 6 months: " + Utils.formatCurrency(data.ext.monthlyExtension) + "/mo";
+      if (data.ext.extensionMinApplied) {
+        noteText += " (min $94.35/mo applied)";
+      } else {
+        noteText += " (16% of rental charges)";
+      }
+      html += '<div class="summary-note info">' + noteText + "</div>";
     }
 
     // Dig Alert note

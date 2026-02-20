@@ -1,5 +1,5 @@
 // ============================================================
-// BARRICADE ESTIMATOR — Barricade Rental tab
+// BARRICADE ESTIMATOR — Barricade Rental tab (monthly pricing)
 // ============================================================
 
 var BarricadeEstimator = {
@@ -10,24 +10,28 @@ var BarricadeEstimator = {
   bindEvents: function () {
     var self = this;
     document.getElementById("barricade-linear-feet").addEventListener("input", function () { self.recalculate(); });
-    document.getElementById("barricade-duration").addEventListener("change", function () { self.recalculate(); });
+    document.querySelectorAll('input[name="barricade-duration"]').forEach(function (r) {
+      r.addEventListener("change", function () { self.recalculate(); });
+    });
     document.getElementById("barricade-zip").addEventListener("input", function () { self.recalculate(); });
   },
 
   recalculate: function () {
     var linearFeet = parseInt(document.getElementById("barricade-linear-feet").value) || 0;
-    var duration = parseInt(document.getElementById("barricade-duration").value) || 6;
+    var durationEl = document.querySelector('input[name="barricade-duration"]:checked');
+    var months = durationEl ? parseInt(durationEl.value) : 0;
     var zip = document.getElementById("barricade-zip").value.trim();
 
-    if (linearFeet <= 0) {
+    if (linearFeet <= 0 || months <= 0) {
       this.renderSummary(null);
       document.getElementById("barricade-save-pdf").style.display = "none";
       return;
     }
 
-    var roundedFeet = Utils.roundUpToPanel(linearFeet);
-    var rate = CONFIG.rental.barricadeRate;
-    var barricadeCost = roundedFeet * rate;
+    // Calculate barricade count (round up)
+    var barricadeCount = Math.ceil(linearFeet / CONFIG.rental.barricadeLengthFt);
+    var monthlyCost = barricadeCount * CONFIG.rental.barricadePrice;
+    var durationCost = monthlyCost * months;
 
     // Delivery
     var delivery = { miles: null, cost: 0, free: false, error: false };
@@ -48,33 +52,30 @@ var BarricadeEstimator = {
       deliveryInfo.textContent = "";
     }
 
-    // Rental subtotal
-    var rentalSubtotal = barricadeCost + delivery.cost;
-    var minimumApplied = false;
-    if (rentalSubtotal < CONFIG.rental.minimumRentalPrice) {
-      minimumApplied = true;
-      rentalSubtotal = CONFIG.rental.minimumRentalPrice;
+    // True total (before Install & Removal Fee)
+    var trueTotal = durationCost + delivery.cost;
+
+    // Install & Removal Fee — explicit line item to reach $950 minimum
+    var installRemovalFee = 0;
+    if (trueTotal < CONFIG.rental.minimumRentalPrice) {
+      installRemovalFee = CONFIG.rental.minimumRentalPrice - trueTotal;
     }
 
-    // Extension charges
-    var ext = Utils.calculateExtensionCharges(rentalSubtotal, duration);
-
-    var grandTotal = rentalSubtotal + ext.extensionTotal;
+    var grandTotal = trueTotal + installRemovalFee;
 
     // Show PDF button
     document.getElementById("barricade-save-pdf").style.display = "inline-block";
 
     this.renderSummary({
       linearFeet: linearFeet,
-      roundedFeet: roundedFeet,
-      rate: rate,
-      barricadeCost: barricadeCost,
+      barricadeCount: barricadeCount,
+      monthlyCost: monthlyCost,
+      months: months,
+      durationCost: durationCost,
       delivery: delivery,
-      rentalSubtotal: rentalSubtotal,
-      minimumApplied: minimumApplied,
-      ext: ext,
-      grandTotal: grandTotal,
-      duration: duration
+      trueTotal: trueTotal,
+      installRemovalFee: installRemovalFee,
+      grandTotal: grandTotal
     });
   },
 
@@ -89,8 +90,12 @@ var BarricadeEstimator = {
 
     // Rental charges
     html += '<div class="summary-section">';
-    html += '<div class="summary-section-title">Rental Charges (6-month base)</div>';
-    html += '<div class="summary-line"><span class="label">Barricades <small>' + data.roundedFeet + " LF @ " + Utils.formatCurrency(data.rate) + '/LF</small></span><span class="value">' + Utils.formatCurrency(data.barricadeCost) + "</span></div>";
+    html += '<div class="summary-section-title">Barricade Rental</div>';
+    html += '<div class="summary-line"><span class="label">Barricades <small>' + data.barricadeCount + " × " + Utils.formatCurrency(CONFIG.rental.barricadePrice) + ' each</small></span><span class="value">' + Utils.formatCurrency(data.monthlyCost) + "/mo</span></div>";
+
+    if (data.months > 1) {
+      html += '<div class="summary-line"><span class="label">Duration <small>' + data.months + " months × " + Utils.formatCurrency(data.monthlyCost) + '/mo</small></span><span class="value">' + Utils.formatCurrency(data.durationCost) + "</span></div>";
+    }
 
     if (data.delivery.miles !== null && !data.delivery.error) {
       if (data.delivery.free) {
@@ -100,34 +105,15 @@ var BarricadeEstimator = {
       }
     }
 
-    html += '<hr class="summary-divider">';
-    html += '<div class="summary-line"><span class="label"><strong>Rental Subtotal</strong>';
-    if (data.minimumApplied) {
-      html += '<span class="summary-badge badge-min">Min $950 applied</span>';
+    if (data.installRemovalFee > 0) {
+      html += '<div class="summary-line"><span class="label">Install & Removal Fee <span class="summary-badge badge-min">Min $950</span></span><span class="value">' + Utils.formatCurrency(data.installRemovalFee) + "</span></div>";
     }
-    html += '</span><span class="value"><strong>' + Utils.formatCurrency(data.rentalSubtotal) + "</strong></span></div>";
-    html += "</div>";
 
-    // Extension charges
-    if (data.ext.extensionMonths > 0) {
-      html += '<div class="summary-section">';
-      html += '<div class="summary-section-title">Extension Charges</div>';
-      if (data.ext.isYearCommitment) {
-        html += '<div class="summary-line"><span class="label">' + data.ext.extensionMonths + " months extension <small>(1 month free)</small>" + '<span class="summary-badge badge-discount">1-Yr Commitment</span></span><span class="value">' + Utils.formatCurrency(data.ext.extensionTotal) + "</span></div>";
-      } else {
-        html += '<div class="summary-line"><span class="label">' + data.ext.extensionMonths + " month(s) @ 16% <small>" + Utils.formatCurrency(data.ext.monthlyExtension) + '/mo</small></span><span class="value">' + Utils.formatCurrency(data.ext.extensionTotal) + "</span></div>";
-      }
-      html += "</div>";
-    }
+    html += "</div>";
 
     // Grand total
     html += '<hr class="summary-divider">';
     html += '<div class="summary-total"><span>Estimated Total</span><span>' + Utils.formatCurrency(data.grandTotal) + "</span></div>";
-
-    // Extension rate note
-    if (data.duration <= 6) {
-      html += '<div class="summary-note info">Monthly extension rate after 6 months: ' + Utils.formatCurrency(data.rentalSubtotal * CONFIG.rental.extensionRate) + "/mo (16% of rental)</div>";
-    }
 
     el.innerHTML = html;
   }
